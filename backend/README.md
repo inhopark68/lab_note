@@ -15,3 +15,18 @@ uvicorn app.main:app --reload --port 8000
 ## Notes
 - SQLite DB file: `backend/data/app.db` (auto-created)
 - Default upload dir: `backend/uploads/`
+
+# Flutter Web Frontend (lib-only)
+
+This folder contains only the `lib/` and `pubspec.yaml` pieces for a Flutter app.
+
+## Quick start
+```bash
+flutter create frontend
+cd frontend
+# Replace lib/ and pubspec.yaml with the ones from this folder
+flutter pub get
+flutter run -d chrome
+```
+
+Backend default baseUrl: http://localhost:8000

@@ -1,4 +1,4 @@
-import 'api_client.dart';
+import 'api_client.dart'; // 프로젝트 실제 경로로 맞추세요
 
 enum EntityKind {
   equipment('equipment', '장비'),
@@ -14,13 +14,13 @@ enum EntityKind {
 }
 
 class EntitiesApi {
-  EntitiesApi(this.client);
   final ApiClient client;
+  EntitiesApi(this.client);
 
   // -------- Auth --------
   Future<String> login({required String email, required String password}) async {
-    // Expecting: {"access_token": "...", "token_type": "bearer"}
-    final res = await client.postJson('/auth/login', {'email': email, 'password': password});
+    final res =
+        await client.postJson('/auth/login', {'email': email, 'password': password});
     final token = (res['access_token'] ?? res['token'] ?? '').toString();
     if (token.isEmpty) {
       throw ApiException(500, 'Login response has no token', body: res);
@@ -63,5 +63,35 @@ class EntitiesApi {
   Future<List<Map<String, dynamic>>> listRecordAttachments(int recordId) async {
     final rows = await client.getList('/records/$recordId/attachments');
     return rows.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
+
+  // -------- SOP upload/download (custom endpoints) --------
+  Future<Map<String, dynamic>> uploadSop({
+    required String title,
+    required String category,
+    required String version,
+    required List<int> fileBytes,
+    required String filename,
+    String contentType = 'application/pdf',
+    String? code,
+  }) async {
+    final res = await client.postMultipart(
+      '/sops/upload',
+      fields: {
+        'title': title,
+        'category': category,
+        'version': version,
+        if (code != null) 'code': code,
+      },
+      fileField: 'file',
+      fileBytes: fileBytes,
+      filename: filename,
+      contentType: contentType,
+    );
+    return res;
+  }
+
+  String sopDownloadUrl(int id) {
+    return '${client.baseUrl}/sops/$id/download';
   }
 }

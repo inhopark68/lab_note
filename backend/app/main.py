@@ -1,28 +1,12 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from app.api.router import api_router
-from app.db.session import init_db
-from app.core.config import settings
+from .database import Base, engine
+from .routers.sops import router as sops_router
 
-def create_app() -> FastAPI:
-    app = FastAPI(title="Lab MVP API", version="0.1.0")
+app = FastAPI(title="Lab MVP API")
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # MVP: tighten in prod
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+Base.metadata.create_all(bind=engine)
 
-    init_db()
+app.include_router(sops_router)
 
-    # serve uploaded files
-    app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
-
-    app.include_router(api_router, prefix="/api")
-
-    return app
-
-app = create_app()
+# run:
+# uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000

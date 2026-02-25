@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Web-only file picker
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../api/entities_api.dart';
 
@@ -133,6 +137,14 @@ class _ListPageState extends State<ListPage> {
                       icon: const Icon(Icons.add),
                       label: const Text('추가'),
                     ),
+                    if (widget.kind == EntityKind.sops) ...[
+                      const SizedBox(width: 8),
+                      FilledButton.tonalIcon(
+                        onPressed: kIsWeb ? () => _uploadSopWeb(context) : null,
+                        icon: const Icon(Icons.upload_file),
+                        label: const Text('업로드'),
+                      ),
+                    ]
                   ],
                 ),
               ),
@@ -185,7 +197,48 @@ class _ListPageState extends State<ListPage> {
     }
   }
 
-  Future<void> _onSaved(Map<String, dynamic> saved) async {
+  
+  Future<void> _uploadSopWeb(BuildContext context) async {
+    if (!kIsWeb) return;
+
+    final meta = await showDialog<_SopUploadMeta>(
+      context: context,
+      builder: (_) => const _SopUploadDialog(),
+    );
+    if (meta == null) return;
+
+    final input = html.FileUploadInputElement()..accept = '.pdf,.doc,.docx';
+    input.click();
+
+    await input.onChange.first;
+    final file = input.files?.isNotEmpty == true ? input.files!.first : null;
+    if (file == null) return;
+
+    final reader = html.FileReader();
+    reader.readAsArrayBuffer(file);
+    await reader.onLoadEnd.first;
+
+    final bytes = (reader.result as List<int>);
+    try {
+      await widget.api.uploadSop(
+        title: meta.title,
+        category: meta.category,
+        version: meta.version,
+        fileBytes: bytes,
+        filename: file.name,
+        contentType: file.type.isNotEmpty ? file.type : 'application/octet-stream',
+        code: (meta.code == null || meta.code!.trim().isEmpty) ? null : meta.code,
+      );
+      await _load();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('SOP 업로드 완료')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('업로드 실패: $e')));
+    }
+  }
+
+Future<void> _onSaved(Map<String, dynamic> saved) async {
     await _load();
     setState(() => _selected = saved);
   }
@@ -193,6 +246,74 @@ class _ListPageState extends State<ListPage> {
   Future<void> _onDeleted() async {
     await _load();
     setState(() => _selected = null);
+  }
+}
+
+
+class _SopUploadMeta {
+  const _SopUploadMeta({
+    required this.title,
+    required this.category,
+    required this.version,
+    this.code,
+  });
+
+  final String title;
+  final String category;
+  final String version;
+  final String? code;
+}
+
+class _SopUploadDialog extends StatefulWidget {
+  const _SopUploadDialog();
+
+  @override
+  State<_SopUploadDialog> createState() => _SopUploadDialogState();
+}
+
+class _SopUploadDialogState extends State<_SopUploadDialog> {
+  final _title = TextEditingController(text: '');
+  final _category = TextEditingController(text: '');
+  final _version = TextEditingController(text: '1.0');
+  final _code = TextEditingController(text: '');
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('SOP 업로드'),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: _title, decoration: const InputDecoration(labelText: '제목')),
+            TextField(controller: _category, decoration: const InputDecoration(labelText: '카테고리')),
+            TextField(controller: _version, decoration: const InputDecoration(labelText: '버전 (예: 1.0)')),
+            TextField(controller: _code, decoration: const InputDecoration(labelText: '코드 (선택, 예: SOP-001)')),
+            const SizedBox(height: 8),
+            const Text('확인 후 파일 선택 창이 열립니다. (Web 환경에서 동작)', style: TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('취소')),
+        FilledButton(
+          onPressed: () {
+            if (_title.text.trim().isEmpty) return;
+            Navigator.pop(
+              context,
+              _SopUploadMeta(
+                title: _title.text.trim(),
+                category: _category.text.trim(),
+                version: _version.text.trim().isEmpty ? '1.0' : _version.text.trim(),
+                code: _code.text.trim(),
+              ),
+            );
+          },
+          child: const Text('다음'),
+        ),
+      ],
+    );
   }
 }
 
@@ -412,6 +533,26 @@ class _DetailState extends State<_Detail> {
             children: [
               Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
               const SizedBox(width: 8),
+              if (widget.kind == EntityKind.sops && widget.item['id'] != null) ...[
+                OutlinedButton.icon(
+                  onPressed: _saving
+                      ? null
+                      : () {
+                          final id = (widget.item['id'] as num).toInt();
+                          final url = widget.api.sopDownloadUrl(id);
+                          if (kIsWeb) {
+                            html.window.open(url, '_blank');
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('웹에서만 다운로드를 지원합니다.')),
+                            );
+                          }
+                        },
+                  icon: const Icon(Icons.download),
+                  label: const Text('다운로드'),
+                ),
+                const SizedBox(width: 8),
+              ],
               OutlinedButton.icon(onPressed: _saving ? null : _delete, icon: const Icon(Icons.delete_outline), label: const Text('삭제')),
               const SizedBox(width: 8),
               FilledButton.icon(onPressed: _saving ? null : _save, icon: const Icon(Icons.save), label: const Text('저장')),
