@@ -1,0 +1,10 @@
+INFO:     Will watch for changes in these directories: ['D:\\coding\\lab_note\\backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [31252] using WatchFiles
+D:\coding\lab_note\backend\.venv\Lib\site-packages\pydantic\_internal\_fields.py:161: UserWarning: Field "model_vendor" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+INFO:     Started server process [26180]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

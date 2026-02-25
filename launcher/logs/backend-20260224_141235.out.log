@@ -1,0 +1,2 @@
+INFO:     127.0.0.1:50281 - "GET /api/records HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:50281 - "GET /api/records/ HTTP/1.1" 200 OK

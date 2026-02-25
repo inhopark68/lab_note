@@ -1,0 +1,44 @@
+import 'package:flutter/material.dart';
+
+class SideMenu extends StatelessWidget {
+  const SideMenu({
+    super.key,
+    required this.selectedIndex,
+    required this.onSelect,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = const [
+      ('인덱스', Icons.home_rounded),
+      ('장비', Icons.science_rounded),
+      ('시설', Icons.apartment_rounded),
+      ('시약', Icons.biotech_rounded),
+      ('실험기록', Icons.assignment_rounded),
+      ('SOP', Icons.checklist_rounded),
+      ('템플릿', Icons.grid_view_rounded),
+    ];
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 6, 16, 10),
+          child: Text('Lab MVP',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+        ),
+        const SizedBox(height: 8),
+        for (int i = 0; i < items.length; i++)
+          ListTile(
+            leading: Icon(items[i].$2),
+            title: Text(items[i].$1),
+            selected: selectedIndex == i,
+            onTap: () => onSelect(i),
+          ),
+      ],
+    );
+  }
+}

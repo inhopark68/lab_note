@@ -1,0 +1,5 @@
+lib/pages/shell.dart:110:3: Error: Can't declare a member that conflicts with an inherited one.
+  index('인덱스', Icons.home_rounded),
+  ^^^^^
+org-dartlang-sdk:///dart-sdk/lib/core/enum.dart: Context: This is the inherited member.
+Failed to compile application.

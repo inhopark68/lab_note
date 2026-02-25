@@ -1,0 +1,9 @@
+lib/pages/shell.dart:3:8: Error: Error when reading 'lib/widgets/side_menu.dart': 지정된 파일을 찾을 수 없습니다
+import '../widgets/side_menu.dart';
+       ^
+lib/pages/shell.dart:25:22: Error: The method 'SideMenu' isn't defined for the type '_ShellState'.
+ - '_ShellState' is from 'package:lab_mvp_frontend/pages/shell.dart' ('lib/pages/shell.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'SideMenu'.
+        final menu = SideMenu(
+                     ^^^^^^^^
+Failed to compile application.

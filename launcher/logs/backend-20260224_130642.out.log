@@ -1,0 +1,6 @@
+INFO:     127.0.0.1:61026 - "GET /api/records HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:61026 - "GET /api/records/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60580 - "OPTIONS /api/records/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60580 - "PUT /api/records/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60580 - "GET /api/records HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60580 - "GET /api/records/ HTTP/1.1" 200 OK
